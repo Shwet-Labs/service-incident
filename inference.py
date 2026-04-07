@@ -57,7 +57,7 @@ load_dotenv()
 API_KEY = os.getenv("API_KEY") or os.getenv("HF_TOKEN")
 API_BASE_URL = os.getenv("API_BASE_URL", "https://openrouter.ai/api/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "anthropic/claude-sonnet-4")
-ENV_URL = os.getenv("ENV_URL", "http://localhost:8000")
+ENV_URL = os.getenv("ENV_URL", "https://rocky-vr-46-service-incident.hf.space")
 BENCHMARK = "service_incident"
 
 # Task configs: task_id -> (max_steps, incident_ids)
