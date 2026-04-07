@@ -1,0 +1,26 @@
+spec_version: 1
+name: service_incident
+type: space
+runtime: fastapi
+app: server.app:app
+port: 7860
+
+description: >
+  Service Incident Triage environment (POMDP). An AI agent acts as an on-call
+  engineer given partial logs and metrics. It must inspect services strategically
+  to identify the root cause and severity while minimizing unnecessary actions.
+
+tasks:
+  - id: easy
+    description: One service clearly failing with obvious anomalies.
+    max_steps: 3
+    grader: rubrics.ServiceIncidentGrader
+  - id: medium
+    description: Multiple noisy signals and correlated failures.
+    max_steps: 5
+    grader: rubrics.ServiceIncidentGrader
+  - id: hard
+    description: Misleading logs and hidden root cause.
+    max_steps: 6
+    grader: rubrics.ServiceIncidentGrader
+
