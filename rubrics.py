@@ -27,16 +27,20 @@ from typing import Any, Dict, List, Tuple
 from openenv.core.rubrics.trajectory import TrajectoryRubric
 
 
+# Strict bounds: scores must be in open interval (0, 1)
+_EPS = 0.01
+
+
 class ServiceIncidentGrader(TrajectoryRubric):
     """Trajectory-based grader for service incident triage episodes.
 
     Accumulates (action, observation) pairs over an episode and produces
-    a final score in [0.0, 1.0] when the episode ends.
+    a final score in (0.0, 1.0) when the episode ends.
 
-    The score is the cumulative reward clamped to [0.0, 1.0]:
-      - Perfect run (correct cause + severity + useful inspections) → 1.0
+    The score is the cumulative reward clamped to (_EPS, 1-_EPS):
+      - Perfect run (correct cause + severity + useful inspections) → ~0.99
       - Partial success (correct service, wrong severity) → 0.6–0.7
-      - Wrong root cause → 0.0
+      - Wrong root cause → ~0.01
     """
 
     def __init__(self) -> None:
@@ -55,7 +59,7 @@ class ServiceIncidentGrader(TrajectoryRubric):
             Grader score in [0.0, 1.0].
         """
         if not trajectory:
-            return 0.0
+            return _EPS
 
         _, final_obs = trajectory[-1]
 
@@ -63,8 +67,8 @@ class ServiceIncidentGrader(TrajectoryRubric):
         metadata = getattr(final_obs, "metadata", {}) or {}
         cumulative = metadata.get("cumulative_reward", 0.0)
 
-        # Clamp to [0.0, 1.0]
-        return max(0.0, min(1.0, cumulative))
+        # Clamp to strictly (0, 1)
+        return max(_EPS, min(1.0 - _EPS, cumulative))
 
     def compute_step_rewards(self) -> List[float]:
         """Compute per-step rewards for credit assignment.

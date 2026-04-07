@@ -264,14 +264,15 @@ def run_episode(
         # (matches ServiceIncidentGrader.score_trajectory logic exactly)
         metadata = getattr(obs, "metadata", {}) or {}
         cumulative = metadata.get("cumulative_reward", sum(rewards))
-        score = max(0.0, min(1.0, cumulative))
+        # Clamp to strictly (0, 1) — validator rejects exact 0.0 and 1.0
+        score = max(0.01, min(0.99, cumulative))
         success = score >= 0.5
 
     except Exception as e:
         print(f"[DEBUG] Episode error: {e}", flush=True)
-        score = max(0.0, min(1.0, score))
+        score = max(0.01, min(0.99, score))
     finally:
-        score = max(0.0, min(1.0, score))
+        score = max(0.01, min(0.99, score))
         log_end(success=success, steps=steps_taken, score=score, rewards=rewards)
 
     return score
@@ -332,21 +333,6 @@ def main() -> None:
                 )
                 task_scores.append(score)
             all_scores[task_id] = task_scores
-            avg = sum(task_scores) / len(task_scores) if task_scores else 0
-            print(f"\n[SUMMARY] task={task_id} avg_score={avg:.3f} scores={[f'{s:.2f}' for s in task_scores]}\n", flush=True)
-
-    # Final summary
-    print("\n" + "=" * 60, flush=True)
-    print("FINAL RESULTS", flush=True)
-    print("=" * 60, flush=True)
-    total_scores = []
-    for task_id, scores in all_scores.items():
-        avg = sum(scores) / len(scores) if scores else 0
-        total_scores.extend(scores)
-        print(f"  {task_id:8s}: avg={avg:.3f}  ({len(scores)} episodes)", flush=True)
-    overall = sum(total_scores) / len(total_scores) if total_scores else 0
-    print(f"  {'overall':8s}: avg={overall:.3f}  ({len(total_scores)} episodes)", flush=True)
-    print("=" * 60, flush=True)
 
 
 if __name__ == "__main__":

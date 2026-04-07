@@ -253,9 +253,9 @@ class ServiceIncidentEnvironment(Environment):
             "task_id": self._task_id,
             "cumulative_reward": self._cumulative_reward,
         }
-        # On terminal observations, include grader_score clamped to [0.0, 1.0]
+        # On terminal observations, include grader_score clamped to (0, 1) strictly
         if done:
-            meta["grader_score"] = max(0.0, min(1.0, self._cumulative_reward))
+            meta["grader_score"] = max(0.01, min(0.99, self._cumulative_reward))
 
         return ServiceIncidentObservation(
             visible_logs=dict(self._visible_logs),
